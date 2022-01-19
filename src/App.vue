@@ -11,13 +11,15 @@
       </div>
     </div>
     <agregar-conejo />
+    <conejos />
   </div>
 </template>
 
 <script>
 import AgregarConejo from "./components/Conejos/AgregarConejo.vue";
+import Conejos from "./components/Conejos/Conejos.vue";
 export default {
-  components: { AgregarConejo },
+  components: { AgregarConejo, Conejos },
   name: "app",
   methods: {
     mostrarToast() {
