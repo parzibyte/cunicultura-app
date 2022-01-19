@@ -142,8 +142,12 @@ export default {
       const { fotos } = conejo;
       conejo.fotos = [];
       conejo.fechaNacimiento.setHours(0, 0, 0, 0);
-      conejo.padre = conejo.padre.identificador;
-      conejo.madre = conejo.madre.identificador;
+      if (conejo.padre) {
+        conejo.padre = conejo.padre.identificador;
+      }
+      if (conejo.madre) {
+        conejo.madre = conejo.madre.identificador;
+      }
       if (fotos.length > 0) {
         for (const foto of fotos) {
           conejo.fotos.push(foto.name);
