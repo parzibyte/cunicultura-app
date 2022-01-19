@@ -19,7 +19,7 @@
           placeholder="Seleccione un conejo"
           v-model="conejo.madre"
         >
-          <option v-for="conejo in conejos" :value="conejo" :key="conejo.id">
+          <option v-for="conejo in conejas" :value="conejo" :key="conejo.id">
             {{ conejo.identificador }}
           </option>
         </b-select>
@@ -84,7 +84,7 @@
   </div>
 </template>
 <script>
-import { onSnapshot, query, addDoc } from "firebase/firestore";
+import { onSnapshot, query, addDoc, where } from "firebase/firestore";
 import BaseDeDatosService from "../../services/BaseDeDatosService";
 import { getStorage, ref, uploadBytes } from "firebase/storage";
 export default {
@@ -92,6 +92,7 @@ export default {
     this.cargando = true;
     this.coleccionConejos = await BaseDeDatosService.obtenerColeccionConejos();
     await this.obtenerConejosYEscucharCambios();
+    await this.obtenerConejasYEscucharCambios();
     this.cargando = false;
   },
   data: () => ({
@@ -104,15 +105,19 @@ export default {
       genero: "M",
     },
     conejos: [],
+    conejas: [],
     cargando: false,
     coleccionConejos: null,
   }),
   methods: {
+    indiceDeConeja(idConeja) {
+      return this.conejas.findIndex((coneja) => coneja.id === idConeja);
+    },
     indiceDeConejo(idConejo) {
       return this.conejos.findIndex((conejo) => conejo.id === idConejo);
     },
     async obtenerConejosYEscucharCambios() {
-      const consulta = query(this.coleccionConejos);
+      const consulta = query(this.coleccionConejos, where("genero", "==", "M"));
       onSnapshot(consulta, (instantanea) => {
         this.cargando = true;
         instantanea.docChanges().forEach((cambio) => {
@@ -132,6 +137,33 @@ export default {
             const indice = this.indiceDeConejo(idConejo);
             if (indice !== -1) {
               this.conejos.splice(indice, 1);
+            }
+          }
+        });
+        this.cargando = false;
+      });
+    },
+    async obtenerConejasYEscucharCambios() {
+      const consulta = query(this.coleccionConejos, where("genero", "==", "H"));
+      onSnapshot(consulta, (instantanea) => {
+        this.cargando = true;
+        instantanea.docChanges().forEach((cambio) => {
+          const coneja = cambio.doc.data();
+          const idConeja = cambio.doc.id;
+          if (cambio.type === "added") {
+            coneja.id = idConeja;
+            this.conejas.push(coneja);
+          }
+          if (cambio.type === "modified") {
+            const indice = this.indiceDeConeja(idConeja);
+            if (indice !== -1) {
+              this.$set(this.conejas, indice, coneja);
+            }
+          }
+          if (cambio.type === "removed") {
+            const indice = this.indiceDeConeja(idConeja);
+            if (indice !== -1) {
+              this.conejas.splice(indice, 1);
             }
           }
         });
@@ -173,6 +205,9 @@ export default {
       addDoc(this.coleccionConejos, conejo);
       this.cargando = false;
       this.$buefy.toast.open("Registro correcto");
+      this.conejo.identificador = "";
+      this.conejo.fechaNacimiento = null;
+      this.conejo.fotos = [];
     },
   },
 };
