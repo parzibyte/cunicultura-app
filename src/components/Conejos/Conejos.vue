@@ -33,8 +33,12 @@
         <b-table-column field="fotos" v-slot="props">
           <fotos-de-conejo :conejo="props.row" />
         </b-table-column>
-        <b-table-column field="fechaNacimiento" v-slot="props">
-          {{ props.row.fechaNacimiento | timestampAFecha }}
+        <b-table-column
+          label="Nacimiento"
+          field="fechaNacimiento"
+          v-slot="props"
+        >
+          {{ props.row.fechaNacimiento | timestampAFecha }} ({{props.row.fechaNacimiento | edad}})
         </b-table-column>
         <b-table-column field="id" label="Opciones" v-slot="props">
           <b-button type="is-info" @click="eliminar(props.row)">

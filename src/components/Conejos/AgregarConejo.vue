@@ -108,6 +108,7 @@ export default {
       Object.assign(conejo, this.conejo);
       const { fotos } = conejo;
       conejo.fotos = [];
+      conejo.fechaNacimiento.setHours(0, 0, 0, 0);
       if (fotos.length > 0) {
         for (const foto of fotos) {
           conejo.fotos.push(foto.name);
