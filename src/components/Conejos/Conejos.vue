@@ -44,22 +44,63 @@
         <b-table-column field="fotos" v-slot="props">
           <fotos-de-conejo :conejo="props.row" />
         </b-table-column>
-        <b-table-column
-          label="Nacimiento"
-          field="fechaNacimiento"
-          v-slot="props"
-        >
-          {{ props.row.fechaNacimiento | timestampAFecha }} ({{
-            props.row.fechaNacimiento | edad
-          }})
+        <b-table-column label="Edad" v-slot="props">
+          {{ props.row.fechaNacimiento | timestampAFecha }}
+          <span v-show="props.row.fechaFallecimiento">
+            - {{ props.row.fechaFallecimiento | timestampAFecha }}
+            <b-icon icon="coffin"></b-icon>
+          </span>
+          <span v-if="!props.row.fechaFallecimiento">
+            ({{ props.row.fechaNacimiento | edad }})
+          </span>
+          <span v-else
+            >({{
+              (props.row.fechaFallecimiento - props.row.fechaNacimiento)
+                | diferenciaAEdad
+            }})</span
+          >
         </b-table-column>
         <b-table-column field="id" label="Opciones" v-slot="props">
+          <b-button
+            v-show="!props.row.fechaFallecimiento"
+            type="is-info"
+            @click="eliminar(props.row)"
+          >
+            <b-icon icon="pencil"></b-icon
+          ></b-button>
+          &nbsp;
+          <b-button
+            v-show="!props.row.fechaFallecimiento"
+            type="is-danger"
+            outlined
+            @click="eliminar(props.row)"
+          >
+            <b-icon icon="heart"></b-icon
+          ></b-button>
+          &nbsp;
+          <b-button
+            v-show="!props.row.fechaFallecimiento"
+            type="is-success"
+            @click="marcarVendido(props.row)"
+          >
+            <b-icon icon="cash"></b-icon
+          ></b-button>
+          &nbsp;
+          <b-button
+            v-show="!props.row.fechaFallecimiento"
+            type="is-warning"
+            @click="marcarFallecido(props.row)"
+          >
+            <b-icon icon="coffin"></b-icon
+          ></b-button>
+          &nbsp;
           <b-button type="is-danger" @click="eliminar(props.row)">
             <b-icon icon="delete"></b-icon
           ></b-button>
-          <b-tag v-show="props.row.eliminada" type="is-success"
-            >Liquidada</b-tag
-          >
+          &nbsp;
+          <b-tag v-show="props.row.vendido">
+            <b-icon icon="cash"></b-icon
+          ></b-tag>
         </b-table-column>
         <template #empty>
           <div class="has-text-centered">No hay registros</div>
@@ -69,7 +110,13 @@
   </div>
 </template>
 <script>
-import { deleteDoc, doc, onSnapshot, query } from "firebase/firestore";
+import {
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  updateDoc,
+} from "firebase/firestore";
 import BaseDeDatosService from "../../services/BaseDeDatosService";
 import FotosDeConejo from "./FotosDeConejo.vue";
 import { deleteObject, getStorage, ref } from "firebase/storage";
@@ -78,11 +125,29 @@ export default {
   data: () => ({
     conejos: [],
     cargando: false,
+    bd: null,
   }),
   async mounted() {
+    this.bd = await BaseDeDatosService.obtener();
     await this.obtenerConejosYEscucharCambios();
   },
   methods: {
+    marcarFallecido(conejo) {
+      this.$buefy.dialog.confirm({
+        message: `¿Marcar como fallecido? Esto no se puede deshacer`,
+        cancelText: "Cancelar",
+        confirmText: "Sí, marcar",
+        onConfirm: async () => {
+          conejo.fechaFallecimiento = new Date().setHours(0, 0, 0, 0);
+          updateDoc(doc(this.bd, "conejos", conejo.id), conejo);
+        },
+      });
+    },
+    marcarVendido(conejo) {
+      //TODO: solicitar monto
+      conejo.vendido = true;
+      updateDoc(doc(this.bd, "conejos", conejo.id), conejo);
+    },
     async eliminar(conejo) {
       this.$buefy.dialog.confirm({
         message: `¿Eliminar conejo? Esto no se puede deshacer`,
