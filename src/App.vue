@@ -1,17 +1,25 @@
 <template>
   <div class="container">
-    <div class="columns">
-      <div class="column">
-        <section>
-          <h1 class="is-size-1">Probando Buefy</h1>
-          <button class="button is-medium" @click="mostrarToast">
-            Mostrar un toast
-          </button>
-        </section>
-      </div>
-    </div>
-    <agregar-conejo />
-    <conejos />
+    <b-tabs type="is-boxed" position="is-centered" v-model="tabActiva">
+      <b-tab-item icon="delete" label="Agregar">
+        <agregar-conejo />
+      </b-tab-item>
+<b-tab-item icon="delete" label="Agregar">
+        <agregar-conejo />
+      </b-tab-item><b-tab-item icon="delete" label="Agregar">
+        <agregar-conejo />
+      </b-tab-item><b-tab-item icon="delete" label="Agregar">
+        <agregar-conejo />
+      </b-tab-item><b-tab-item icon="delete" label="Agregar">
+        <agregar-conejo />
+      </b-tab-item>
+      <b-tab-item icon="rabbit" label="Conejos">
+        <conejos />
+      </b-tab-item>
+      <b-tab-item label="Acerca de">
+        <conejos />
+      </b-tab-item>
+    </b-tabs>
   </div>
 </template>
 
@@ -20,6 +28,9 @@ import AgregarConejo from "./components/Conejos/AgregarConejo.vue";
 import Conejos from "./components/Conejos/Conejos.vue";
 export default {
   components: { AgregarConejo, Conejos },
+  data: () => ({
+    tabActiva: 0,
+  }),
   name: "app",
   methods: {
     mostrarToast() {

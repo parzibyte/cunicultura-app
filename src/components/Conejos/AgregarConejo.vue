@@ -1,7 +1,6 @@
 <template>
   <div class="columns">
     <div class="column">
-      <p>Agregamos el conejo</p>
       <b-field label="Padre">
         <b-select
           :loading="cargando"
@@ -16,7 +15,7 @@
       <b-field label="Madre">
         <b-select
           :loading="cargando"
-          placeholder="Seleccione un conejo"
+          placeholder="Seleccione una coneja"
           v-model="conejo.madre"
         >
           <option v-for="conejo in conejas" :value="conejo" :key="conejo.id">

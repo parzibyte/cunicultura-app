@@ -1,7 +1,6 @@
 <template>
   <div class="columns">
     <div class="column">
-      <p>Somos los conejos</p>
       <b-table
         :data="conejos"
         :loading="cargando"
