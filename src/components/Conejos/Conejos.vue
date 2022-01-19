@@ -38,7 +38,9 @@
           field="fechaNacimiento"
           v-slot="props"
         >
-          {{ props.row.fechaNacimiento | timestampAFecha }} ({{props.row.fechaNacimiento | edad}})
+          {{ props.row.fechaNacimiento | timestampAFecha }} ({{
+            props.row.fechaNacimiento | edad
+          }})
         </b-table-column>
         <b-table-column field="id" label="Opciones" v-slot="props">
           <b-button type="is-info" @click="eliminar(props.row)">
@@ -76,6 +78,7 @@ export default {
       );
       onSnapshot(consulta, (instantanea) => {
         instantanea.docChanges().forEach((cambio) => {
+          this.cargando = true;
           const conejo = cambio.doc.data();
           const idConejo = cambio.doc.id;
           if (cambio.type === "added") {
@@ -95,8 +98,8 @@ export default {
             }
           }
         });
+          this.cargando = false;
       });
-      this.cargando = false;
     },
     indiceDeConejo(idConejo) {
       return this.conejos.findIndex((conejo) => conejo.id === idConejo);

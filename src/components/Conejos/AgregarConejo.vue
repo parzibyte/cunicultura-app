@@ -8,8 +8,8 @@
           placeholder="Seleccione un conejo"
           v-model="conejo.padre"
         >
-          <option v-for="conejo in conejos" :value="usuario" :key="conejo.id">
-            {{ conejo }}
+          <option v-for="conejo in conejos" :value="conejo" :key="conejo.id">
+            {{ conejo.identificador }}
           </option>
         </b-select>
       </b-field>
@@ -19,8 +19,8 @@
           placeholder="Seleccione un conejo"
           v-model="conejo.madre"
         >
-          <option v-for="conejo in conejos" :value="usuario" :key="conejo.id">
-            {{ conejo }}
+          <option v-for="conejo in conejos" :value="conejo" :key="conejo.id">
+            {{ conejo.identificador }}
           </option>
         </b-select>
       </b-field>
@@ -76,12 +76,15 @@
   </div>
 </template>
 <script>
-import { addDoc } from "firebase/firestore";
+import { onSnapshot, query, addDoc } from "firebase/firestore";
 import BaseDeDatosService from "../../services/BaseDeDatosService";
 import { getStorage, ref, uploadBytes } from "firebase/storage";
 export default {
   async mounted() {
+    this.cargando = true;
     this.coleccionConejos = await BaseDeDatosService.obtenerColeccionConejos();
+    await this.obtenerConejosYEscucharCambios();
+    this.cargando = false;
   },
   data: () => ({
     conejo: {
@@ -96,6 +99,36 @@ export default {
     coleccionConejos: null,
   }),
   methods: {
+    indiceDeConejo(idConejo) {
+      return this.conejos.findIndex((conejo) => conejo.id === idConejo);
+    },
+    async obtenerConejosYEscucharCambios() {
+      const consulta = query(this.coleccionConejos);
+      onSnapshot(consulta, (instantanea) => {
+        this.cargando = true;
+        instantanea.docChanges().forEach((cambio) => {
+          const conejo = cambio.doc.data();
+          const idConejo = cambio.doc.id;
+          if (cambio.type === "added") {
+            conejo.id = idConejo;
+            this.conejos.push(conejo);
+          }
+          if (cambio.type === "modified") {
+            const indice = this.indiceDeConejo(idConejo);
+            if (indice !== -1) {
+              this.$set(this.conejos, indice, conejo);
+            }
+          }
+          if (cambio.type === "removed") {
+            const indice = this.indiceDeConejo(idConejo);
+            if (indice !== -1) {
+              this.conejos.splice(indice, 1);
+            }
+          }
+        });
+        this.cargando = false;
+      });
+    },
     eliminarFoto(indice) {
       this.conejo.fotos.splice(indice, 1);
     },
@@ -109,6 +142,8 @@ export default {
       const { fotos } = conejo;
       conejo.fotos = [];
       conejo.fechaNacimiento.setHours(0, 0, 0, 0);
+      conejo.padre = conejo.padre.identificador;
+      conejo.madre = conejo.madre.identificador;
       if (fotos.length > 0) {
         for (const foto of fotos) {
           conejo.fotos.push(foto.name);
