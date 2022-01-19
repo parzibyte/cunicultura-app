@@ -30,8 +30,11 @@
             >{{ props.row.padre }}</b-tag
           >
         </b-table-column>
-        <b-table-column field="fotos"  v-slot="props">
+        <b-table-column field="fotos" v-slot="props">
           <fotos-de-conejo :conejo="props.row" />
+        </b-table-column>
+        <b-table-column field="fechaNacimiento" v-slot="props">
+          {{ props.row.fechaNacimiento | timestampAFecha }}
         </b-table-column>
         <b-table-column field="id" label="Opciones" v-slot="props">
           <b-button type="is-info" @click="eliminar(props.row)">
@@ -53,7 +56,7 @@ import { onSnapshot, query } from "firebase/firestore";
 import BaseDeDatosService from "../../services/BaseDeDatosService";
 import FotosDeConejo from "./FotosDeConejo.vue";
 export default {
-  components: {  FotosDeConejo },
+  components: { FotosDeConejo },
   data: () => ({
     conejos: [],
     cargando: false,
