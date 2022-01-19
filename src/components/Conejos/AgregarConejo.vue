@@ -182,7 +182,9 @@ export default {
       Object.assign(conejo, this.conejo);
       const { fotos } = conejo;
       conejo.fotos = [];
-      conejo.fechaNacimiento.setHours(0, 0, 0, 0);
+      if (conejo.fechaNacimiento) {
+        conejo.fechaNacimiento.setHours(0, 0, 0, 0);
+      }
       if (conejo.padre) {
         conejo.padre = conejo.padre.identificador;
       }
