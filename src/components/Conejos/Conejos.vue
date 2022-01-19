@@ -16,7 +16,16 @@
           {{ props.row.identificador }}
         </b-table-column>
         <b-table-column field="genero" label="Género" v-slot="props">
-          {{ props.row.genero }}
+          <b-icon
+            v-show="props.row.genero === 'H'"
+            class="icono-coneja"
+            icon="gender-female"
+          ></b-icon>
+          <b-icon
+            v-show="props.row.genero === 'M'"
+            class="icono-conejo"
+            icon="gender-male"
+          ></b-icon>
         </b-table-column>
         <b-table-column field="padre" label="Padres" v-slot="props">
           <b-tag
@@ -46,7 +55,7 @@
           }})
         </b-table-column>
         <b-table-column field="id" label="Opciones" v-slot="props">
-          <b-button type="is-info" @click="eliminar(props.row)">
+          <b-button type="is-danger" @click="eliminar(props.row)">
             <b-icon icon="delete"></b-icon
           ></b-button>
           <b-tag v-show="props.row.eliminada" type="is-success"
@@ -118,5 +127,11 @@ export default {
 .color-conejo {
   background-color: #0d47a1;
   color: white;
+}
+.icono-coneja {
+  color: #ec407a;
+}
+.icono-conejo {
+  color: #0d47a1;
 }
 </style>
