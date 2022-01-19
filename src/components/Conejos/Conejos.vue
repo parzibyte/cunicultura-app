@@ -70,9 +70,10 @@
   </div>
 </template>
 <script>
-import { onSnapshot, query } from "firebase/firestore";
+import { deleteDoc, doc, onSnapshot, query } from "firebase/firestore";
 import BaseDeDatosService from "../../services/BaseDeDatosService";
 import FotosDeConejo from "./FotosDeConejo.vue";
+import { deleteObject, getStorage, ref } from "firebase/storage";
 export default {
   components: { FotosDeConejo },
   data: () => ({
@@ -83,6 +84,28 @@ export default {
     await this.obtenerConejosYEscucharCambios();
   },
   methods: {
+    async eliminar(conejo) {
+      this.$buefy.dialog.confirm({
+        message: `¿Eliminar conejo? Esto no se puede deshacer`,
+        cancelText: "Cancelar",
+        confirmText: "Sí, eliminar",
+        onConfirm: async () => {
+          this.cargando = true;
+          const storage = getStorage();
+          for (const foto of conejo.fotos) {
+            await deleteObject(
+              ref(storage, `conejos/${conejo.identificador}/${foto}`)
+            );
+          }
+          await deleteDoc(
+            doc(await BaseDeDatosService.obtener(), "conejos", conejo.id)
+          );
+          this.cargando = false;
+
+          this.$buefy.toast.open("Eliminado");
+        },
+      });
+    },
     async obtenerConejosYEscucharCambios() {
       this.cargando = true;
       const consulta = query(
