@@ -15,6 +15,9 @@
         >
           {{ props.row.identificador }}
         </b-table-column>
+        <b-table-column field="genero" label="Género" v-slot="props">
+          {{ props.row.genero }}
+        </b-table-column>
         <b-table-column field="padre" label="Padres" v-slot="props">
           <b-tag
             size="is-medium"
@@ -98,7 +101,7 @@ export default {
             }
           }
         });
-          this.cargando = false;
+        this.cargando = false;
       });
     },
     indiceDeConejo(idConejo) {

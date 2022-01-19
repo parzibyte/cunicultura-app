@@ -30,6 +30,14 @@
           placeholder="Identificador"
         ></b-input>
       </b-field>
+      <b-field label="Género">
+        <b-radio v-model="conejo.genero" name="name" native-value="M">
+          Macho
+        </b-radio>
+        <b-radio v-model="conejo.genero" name="name" native-value="H">
+          Hembra
+        </b-radio>
+      </b-field>
       <b-field label="Fecha de nacimiento">
         <b-datepicker
           v-model="conejo.fechaNacimiento"
@@ -93,6 +101,7 @@ export default {
       identificador: "",
       fechaNacimiento: null,
       fotos: [],
+      genero: "M",
     },
     conejos: [],
     cargando: false,
