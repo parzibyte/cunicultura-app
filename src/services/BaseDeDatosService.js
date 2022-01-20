@@ -62,5 +62,11 @@ const BaseDeDatosService = {
             "ventas"
         );
     },
+    obtenerColeccionApareamientos: async () => {
+        return collection(
+            await BaseDeDatosService.obtener(),
+            "apareamientos"
+        );
+    },
 };
 export default BaseDeDatosService;
