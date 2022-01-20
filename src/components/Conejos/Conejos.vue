@@ -70,10 +70,14 @@
           ></b-button>
           &nbsp;
           <b-button
-            v-show="!props.row.fechaFallecimiento && !props.row.vendido"
+            v-show="
+              !props.row.fechaFallecimiento &&
+              !props.row.vendido &&
+              props.row.genero === 'H'
+            "
             type="is-danger"
             outlined
-            @click="eliminar(props.row)"
+            @click="apareamientos(props.row)"
           >
             <b-icon icon="heart"></b-icon
           ></b-button>
@@ -98,9 +102,7 @@
             <b-icon icon="delete"></b-icon
           ></b-button>
           &nbsp;
-          <b-tag v-show="props.row.vendido" type="is-success">
-            Vendido
-          </b-tag>
+          <b-tag v-show="props.row.vendido" type="is-success"> Vendido </b-tag>
         </b-table-column>
         <template #empty>
           <div class="has-text-centered">No hay registros</div>
@@ -133,6 +135,14 @@ export default {
     await this.obtenerConejosYEscucharCambios();
   },
   methods: {
+    apareamientos(conejo) {
+      this.$router.push({
+        name: "Apareamientos",
+        params: {
+          id: conejo.id,
+        },
+      });
+    },
     marcarFallecido(conejo) {
       this.$buefy.dialog.confirm({
         message: `¿Marcar como fallecido? Esto no se puede deshacer`,
