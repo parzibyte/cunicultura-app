@@ -56,5 +56,11 @@ const BaseDeDatosService = {
             "conejos"
         );
     },
+    obtenerColeccionVentas: async () => {
+        return collection(
+            await BaseDeDatosService.obtener(),
+            "ventas"
+        );
+    },
 };
 export default BaseDeDatosService;

@@ -62,7 +62,7 @@
         </b-table-column>
         <b-table-column field="id" label="Opciones" v-slot="props">
           <b-button
-            v-show="!props.row.fechaFallecimiento"
+            v-show="!props.row.fechaFallecimiento && !props.row.vendido"
             type="is-info"
             @click="eliminar(props.row)"
           >
@@ -70,7 +70,7 @@
           ></b-button>
           &nbsp;
           <b-button
-            v-show="!props.row.fechaFallecimiento"
+            v-show="!props.row.fechaFallecimiento && !props.row.vendido"
             type="is-danger"
             outlined
             @click="eliminar(props.row)"
@@ -79,7 +79,7 @@
           ></b-button>
           &nbsp;
           <b-button
-            v-show="!props.row.fechaFallecimiento"
+            v-show="!props.row.fechaFallecimiento && !props.row.vendido"
             type="is-success"
             @click="marcarVendido(props.row)"
           >
@@ -87,7 +87,7 @@
           ></b-button>
           &nbsp;
           <b-button
-            v-show="!props.row.fechaFallecimiento"
+            v-show="!props.row.fechaFallecimiento && !props.row.vendido"
             type="is-warning"
             @click="marcarFallecido(props.row)"
           >
@@ -98,9 +98,9 @@
             <b-icon icon="delete"></b-icon
           ></b-button>
           &nbsp;
-          <b-tag v-show="props.row.vendido">
-            <b-icon icon="cash"></b-icon
-          ></b-tag>
+          <b-tag v-show="props.row.vendido" type="is-success">
+            Vendido
+          </b-tag>
         </b-table-column>
         <template #empty>
           <div class="has-text-centered">No hay registros</div>
@@ -116,6 +116,7 @@ import {
   onSnapshot,
   query,
   updateDoc,
+  addDoc,
 } from "firebase/firestore";
 import BaseDeDatosService from "../../services/BaseDeDatosService";
 import FotosDeConejo from "./FotosDeConejo.vue";
@@ -144,9 +145,26 @@ export default {
       });
     },
     marcarVendido(conejo) {
-      //TODO: solicitar monto
-      conejo.vendido = true;
-      updateDoc(doc(this.bd, "conejos", conejo.id), conejo);
+      this.$buefy.dialog.prompt({
+        message: "Ingresa la cantidad: ",
+        inputAttrs: {
+          type: "number",
+          placeholder: "Escribe la cantidad",
+          min: 1,
+        },
+        trapFocus: true,
+        onConfirm: async (monto) => {
+          monto = parseFloat(monto);
+          conejo.vendido = true;
+          addDoc(await BaseDeDatosService.obtenerColeccionVentas(), {
+            monto,
+            idConejo: conejo.id,
+            fecha: new Date().getTime(),
+          });
+          updateDoc(doc(this.bd, "conejos", conejo.id), conejo);
+          this.$buefy.toast.open("Vendido");
+        },
+      });
     },
     async eliminar(conejo) {
       this.$buefy.dialog.confirm({

@@ -116,6 +116,9 @@ export default {
       return this.conejos.findIndex((conejo) => conejo.id === idConejo);
     },
     async obtenerConejosYEscucharCambios() {
+      /*
+      TODO: no obtener los que estén fallecidos o vendidos, igual para las conejas
+      */
       const consulta = query(this.coleccionConejos, where("genero", "==", "M"));
       onSnapshot(consulta, (instantanea) => {
         this.cargando = true;
