@@ -116,10 +116,12 @@ export default {
       return this.conejos.findIndex((conejo) => conejo.id === idConejo);
     },
     async obtenerConejosYEscucharCambios() {
-      /*
-      TODO: no obtener los que estén fallecidos o vendidos, igual para las conejas
-      */
-      const consulta = query(this.coleccionConejos, where("genero", "==", "M"));
+      const consulta = query(
+        this.coleccionConejos,
+        where("genero", "==", "M"),
+        where("fechaFallecimiento", "==", null),
+        where("vendido", "==", false)
+      );
       onSnapshot(consulta, (instantanea) => {
         this.cargando = true;
         instantanea.docChanges().forEach((cambio) => {
@@ -146,7 +148,12 @@ export default {
       });
     },
     async obtenerConejasYEscucharCambios() {
-      const consulta = query(this.coleccionConejos, where("genero", "==", "H"));
+      const consulta = query(
+        this.coleccionConejos,
+        where("genero", "==", "H"),
+        where("fechaFallecimiento", "==", null),
+        where("vendido", "==", false)
+      );
       onSnapshot(consulta, (instantanea) => {
         this.cargando = true;
         instantanea.docChanges().forEach((cambio) => {
@@ -184,8 +191,11 @@ export default {
       Object.assign(conejo, this.conejo);
       const { fotos } = conejo;
       conejo.fotos = [];
+      conejo.fechaFallecimiento = null;
+      conejo.vendido = false;
       if (conejo.fechaNacimiento) {
         conejo.fechaNacimiento.setHours(0, 0, 0, 0);
+        conejo.fechaNacimiento = conejo.fechaNacimiento.getTime();
       }
       if (conejo.padre) {
         conejo.padre = conejo.padre.identificador;
@@ -202,9 +212,6 @@ export default {
           );
           await uploadBytes(referenciaFoto, foto);
         }
-      }
-      if (conejo.fechaNacimiento) {
-        conejo.fechaNacimiento = conejo.fechaNacimiento.getTime();
       }
       addDoc(this.coleccionConejos, conejo);
       this.cargando = false;
