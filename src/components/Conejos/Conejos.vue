@@ -1,164 +1,199 @@
 <template>
-  <div class="columns">
-    <div class="column">
-      <b-field label="Estado">
-        <b-select
-          :loading="cargando"
-          expanded
-          icon="coffin"
-          @change.native="obtenerConejosYEscucharCambios()"
-          v-model="filtrosSeleccionados.fallecidos"
-        >
-          <option
-            v-for="estado in filtros.fallecidos"
-            :value="estado"
-            :key="estado"
-          >
-            {{ estado }}
-          </option>
-        </b-select>
-      </b-field>
-      <b-field>
-        <b-select
-          :loading="cargando"
-          expanded
-          icon="cash"
-          @change.native="obtenerConejosYEscucharCambios()"
-          v-model="filtrosSeleccionados.vendidos"
-        >
-          <option
-            v-for="estado in filtros.vendidos"
-            :value="estado"
-            :key="estado"
-          >
-            {{ estado }}
-          </option>
-        </b-select>
-      </b-field>
-      <b-field label="Género">
-        <b-select
-          :loading="cargando"
-          expanded
-          icon="gender-male"
-          @change.native="obtenerConejosYEscucharCambios()"
-          v-model="filtrosSeleccionados.genero"
-        >
-          <option
-            v-for="estado in filtros.generos"
-            :value="estado"
-            :key="estado"
-          >
-            {{ estado }}
-          </option>
-        </b-select>
-      </b-field>
-      <b-table
-        :data="conejos"
-        :loading="cargando"
-        :mobile-cards="true"
-        hoverable
-      >
-        <b-table-column
-          field="identificador"
-          label="Identificador"
-          v-slot="props"
-        >
-          {{ props.row.identificador }}
-        </b-table-column>
-        <b-table-column field="genero" label="Género" v-slot="props">
-          <b-icon
-            v-show="props.row.genero === 'H'"
-            class="icono-coneja"
-            icon="gender-female"
-          ></b-icon>
-          <b-icon
-            v-show="props.row.genero === 'M'"
-            class="icono-conejo"
-            icon="gender-male"
-          ></b-icon>
-        </b-table-column>
-        <b-table-column field="padre" label="Padres" v-slot="props">
-          <b-tag
-            size="is-medium"
-            v-show="props.row.madre"
-            class="color-coneja"
-            >{{ props.row.madre }}</b-tag
-          >
-          &nbsp;
-          <b-tag
-            v-show="props.row.padre"
-            size="is-medium"
-            class="color-conejo"
-            >{{ props.row.padre }}</b-tag
-          >
-        </b-table-column>
-        <b-table-column field="fotos" v-slot="props">
-          <fotos-de-conejo :conejo="props.row" />
-        </b-table-column>
-        <b-table-column label="Edad" v-slot="props">
-          {{ props.row.fechaNacimiento | timestampAFecha }}
-          <span v-show="props.row.fechaFallecimiento">
-            - {{ props.row.fechaFallecimiento | timestampAFecha }}
-            <b-icon icon="coffin"></b-icon>
-          </span>
-          <span v-if="!props.row.fechaFallecimiento">
-            ({{ props.row.fechaNacimiento | edad }})
-          </span>
-          <span v-else
-            >({{
-              (props.row.fechaFallecimiento - props.row.fechaNacimiento)
-                | diferenciaAEdad
-            }})</span
-          >
-        </b-table-column>
-        <b-table-column field="id" label="Opciones" v-slot="props">
+  <div>
+    <div class="columns">
+      <div class="column">
+        <div class="control">
           <b-button
-            v-show="!props.row.fechaFallecimiento && !props.row.vendido"
+            @click="mostrarFiltros = !mostrarFiltros"
+            icon-right="filter-variant"
             type="is-info"
-            @click="eliminar(props.row)"
+            >Filtrar</b-button
           >
-            <b-icon icon="pencil"></b-icon
-          ></b-button>
           &nbsp;
-          <b-button
-            v-show="
-              !props.row.fechaFallecimiento &&
-              !props.row.vendido &&
-              props.row.genero === 'H'
-            "
-            type="is-danger"
-            outlined
-            @click="apareamientos(props.row)"
+          <b-taglist attached style="display: inline">
+            <b-tag size="is-medium" class="color-conejo">
+              <b-icon icon="gender-male"></b-icon>
+              {{ totalMachos() }}</b-tag
+            >
+            <b-tag size="is-medium" class="color-coneja">
+              <b-icon icon="gender-female"></b-icon>
+              {{ totalHembras() }}</b-tag
+            >
+            <b-tag size="is-medium" type="is-warning">
+              <b-icon icon="sigma"></b-icon>
+              {{ totalMachos() + totalHembras() }}</b-tag
+            >
+          </b-taglist>
+        </div>
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column" v-show="mostrarFiltros">
+        <b-field label="Estado">
+          <b-select
+            :loading="cargando"
+            expanded
+            icon="coffin"
+            @change.native="obtenerConejosYEscucharCambios()"
+            v-model="filtrosSeleccionados.fallecidos"
           >
-            <b-icon icon="heart"></b-icon
-          ></b-button>
-          &nbsp;
-          <b-button
-            v-show="!props.row.fechaFallecimiento && !props.row.vendido"
-            type="is-success"
-            @click="marcarVendido(props.row)"
+            <option
+              v-for="estado in filtros.fallecidos"
+              :value="estado"
+              :key="estado"
+            >
+              {{ estado }}
+            </option>
+          </b-select>
+        </b-field>
+        <b-field>
+          <b-select
+            :loading="cargando"
+            expanded
+            icon="cash"
+            @change.native="obtenerConejosYEscucharCambios()"
+            v-model="filtrosSeleccionados.vendidos"
           >
-            <b-icon icon="cash"></b-icon
-          ></b-button>
-          &nbsp;
-          <b-button
-            v-show="!props.row.fechaFallecimiento && !props.row.vendido"
-            type="is-warning"
-            @click="marcarFallecido(props.row)"
+            <option
+              v-for="estado in filtros.vendidos"
+              :value="estado"
+              :key="estado"
+            >
+              {{ estado }}
+            </option>
+          </b-select>
+        </b-field>
+        <b-field label="Género">
+          <b-select
+            :loading="cargando"
+            expanded
+            icon="gender-male"
+            @change.native="obtenerConejosYEscucharCambios()"
+            v-model="filtrosSeleccionados.genero"
           >
-            <b-icon icon="coffin"></b-icon
-          ></b-button>
-          &nbsp;
-          <b-button type="is-danger" @click="eliminar(props.row)">
-            <b-icon icon="delete"></b-icon
-          ></b-button>
-          &nbsp;
-          <b-tag v-show="props.row.vendido" type="is-success"> Vendido </b-tag>
-        </b-table-column>
-        <template #empty>
-          <div class="has-text-centered">No hay registros</div>
-        </template>
-      </b-table>
+            <option
+              v-for="estado in filtros.generos"
+              :value="estado"
+              :key="estado"
+            >
+              {{ estado }}
+            </option>
+          </b-select>
+        </b-field>
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column">
+        <b-table
+          :data="conejos"
+          :loading="cargando"
+          :mobile-cards="true"
+          hoverable
+        >
+          <b-table-column
+            field="identificador"
+            label="Identificador"
+            v-slot="props"
+          >
+            {{ props.row.identificador }}
+          </b-table-column>
+          <b-table-column field="genero" label="Género" v-slot="props">
+            <b-icon
+              v-show="props.row.genero === 'H'"
+              class="icono-coneja"
+              icon="gender-female"
+            ></b-icon>
+            <b-icon
+              v-show="props.row.genero === 'M'"
+              class="icono-conejo"
+              icon="gender-male"
+            ></b-icon>
+          </b-table-column>
+          <b-table-column field="padre" label="Padres" v-slot="props">
+            <b-tag
+              size="is-medium"
+              v-show="props.row.madre"
+              class="color-coneja"
+              >{{ props.row.madre }}</b-tag
+            >
+            &nbsp;
+            <b-tag
+              v-show="props.row.padre"
+              size="is-medium"
+              class="color-conejo"
+              >{{ props.row.padre }}</b-tag
+            >
+          </b-table-column>
+          <b-table-column field="fotos" v-slot="props">
+            <fotos-de-conejo :conejo="props.row" />
+          </b-table-column>
+          <b-table-column label="Edad" v-slot="props">
+            {{ props.row.fechaNacimiento | timestampAFecha }}
+            <span v-show="props.row.fechaFallecimiento">
+              - {{ props.row.fechaFallecimiento | timestampAFecha }}
+              <b-icon icon="coffin"></b-icon>
+            </span>
+            <span v-if="!props.row.fechaFallecimiento">
+              ({{ props.row.fechaNacimiento | edad }})
+            </span>
+            <span v-else
+              >({{
+                (props.row.fechaFallecimiento - props.row.fechaNacimiento)
+                  | diferenciaAEdad
+              }})</span
+            >
+          </b-table-column>
+          <b-table-column field="id" label="Opciones" v-slot="props">
+            <b-button
+              v-show="!props.row.fechaFallecimiento && !props.row.vendido"
+              type="is-info"
+              @click="eliminar(props.row)"
+            >
+              <b-icon icon="pencil"></b-icon
+            ></b-button>
+            &nbsp;
+            <b-button
+              v-show="
+                !props.row.fechaFallecimiento &&
+                !props.row.vendido &&
+                props.row.genero === 'H'
+              "
+              type="is-danger"
+              outlined
+              @click="apareamientos(props.row)"
+            >
+              <b-icon icon="heart"></b-icon
+            ></b-button>
+            &nbsp;
+            <b-button
+              v-show="!props.row.fechaFallecimiento && !props.row.vendido"
+              type="is-success"
+              @click="marcarVendido(props.row)"
+            >
+              <b-icon icon="cash"></b-icon
+            ></b-button>
+            &nbsp;
+            <b-button
+              v-show="!props.row.fechaFallecimiento && !props.row.vendido"
+              type="is-warning"
+              @click="marcarFallecido(props.row)"
+            >
+              <b-icon icon="coffin"></b-icon
+            ></b-button>
+            &nbsp;
+            <b-button type="is-danger" @click="eliminar(props.row)">
+              <b-icon icon="delete"></b-icon
+            ></b-button>
+            &nbsp;
+            <b-tag v-show="props.row.vendido" type="is-success">
+              Vendido
+            </b-tag>
+          </b-table-column>
+          <template #empty>
+            <div class="has-text-centered">No hay registros</div>
+          </template>
+        </b-table>
+      </div>
     </div>
   </div>
 </template>
@@ -187,6 +222,7 @@ const FallecimientoFallecido = "Fallecidos",
 export default {
   components: { FotosDeConejo },
   data: () => ({
+    mostrarFiltros: false,
     filtrosSeleccionados: {
       fallecidos: FallecimientoVivo,
       vendidos: VendidoNoVendido,
@@ -210,6 +246,24 @@ export default {
     await this.obtenerConejosYEscucharCambios();
   },
   methods: {
+    totalMachos() {
+      let total = 0;
+      for (const conejo of this.conejos) {
+        if (conejo.genero === GeneroMacho) {
+          total++;
+        }
+      }
+      return total;
+    },
+    totalHembras() {
+      let total = 0;
+      for (const conejo of this.conejos) {
+        if (conejo.genero === GeneroHembra) {
+          total++;
+        }
+      }
+      return total;
+    },
     apareamientos(conejo) {
       this.$router.push({
         name: "Apareamientos",
@@ -275,7 +329,6 @@ export default {
     },
     async obtenerConejosYEscucharCambios() {
       this.conejos = [];
-      console.log("Obtener...");
       const consultas = [];
       if (this.filtrosSeleccionados.fallecidos === FallecimientoVivo) {
         consultas.push(where("fechaFallecimiento", "==", null));
@@ -295,8 +348,6 @@ export default {
       } else if (this.filtrosSeleccionados.genero === GeneroMacho) {
         consultas.push(where("genero", "==", "M"));
       }
-      console.log({ consultas });
-
       this.cargando = true;
       const consulta = query(
         await BaseDeDatosService.obtenerColeccionConejos(),
@@ -335,11 +386,11 @@ export default {
 </script>
 <style scoped>
 .color-coneja {
-  background-color: #ec407a;
+  background-color: #ec407a !important;
   color: white;
 }
 .color-conejo {
-  background-color: #0d47a1;
+  background-color: #0d47a1 !important;
   color: white;
 }
 .icono-coneja {
