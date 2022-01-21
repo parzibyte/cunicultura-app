@@ -2,6 +2,7 @@
   <div class="section">
     <div class="columns">
       <div class="column">
+        
         <b-table
           :data="ventas"
           :loading="cargando"
@@ -20,7 +21,7 @@
             <div class="has-text-centered">No hay registros</div>
           </template>
           <template #footer>
-            <th >
+            <th>
               <div class="th-wrap">Total</div>
             </th>
             <th colspan="2">

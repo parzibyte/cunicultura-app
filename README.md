@@ -1,5 +1,9 @@
 # cunicultura-app
 
+## Índices de Firestore
+Firestore dará errores en la consola que se pueden crear haciendo clic en el link que aparece en la misma.
+
+
 ## Project setup
 ```
 npm install
