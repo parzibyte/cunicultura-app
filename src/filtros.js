@@ -1,8 +1,10 @@
 import Vue from 'vue'
 const formateadorFecha = new Intl.DateTimeFormat('es-MX', { dateStyle: 'medium', });
+const formateadorDinero = new Intl.NumberFormat("en", { style: "currency", "currency": "MXN" });
 const DiaEnMilisegundos = 1000 * 60 * 60 * 24;
 const AñoEnMilisegundos = DiaEnMilisegundos * 365;
 const MesEnMilisegundos = AñoEnMilisegundos / 12;
+Vue.filter("dinero", cantidad => formateadorDinero.format(cantidad));
 Vue.filter("timestampAFecha", timestamp => {
     if (!timestamp) {
         return "";
