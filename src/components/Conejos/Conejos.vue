@@ -1,6 +1,57 @@
 <template>
   <div class="columns">
     <div class="column">
+      <b-field label="Estado">
+        <b-select
+          :loading="cargando"
+          expanded
+          icon="coffin"
+          @change.native="obtenerConejosYEscucharCambios()"
+          v-model="filtrosSeleccionados.fallecidos"
+        >
+          <option
+            v-for="estado in filtros.fallecidos"
+            :value="estado"
+            :key="estado"
+          >
+            {{ estado }}
+          </option>
+        </b-select>
+      </b-field>
+      <b-field>
+        <b-select
+          :loading="cargando"
+          expanded
+          icon="cash"
+          @change.native="obtenerConejosYEscucharCambios()"
+          v-model="filtrosSeleccionados.vendidos"
+        >
+          <option
+            v-for="estado in filtros.vendidos"
+            :value="estado"
+            :key="estado"
+          >
+            {{ estado }}
+          </option>
+        </b-select>
+      </b-field>
+      <b-field label="Género">
+        <b-select
+          :loading="cargando"
+          expanded
+          icon="gender-male"
+          @change.native="obtenerConejosYEscucharCambios()"
+          v-model="filtrosSeleccionados.genero"
+        >
+          <option
+            v-for="estado in filtros.generos"
+            :value="estado"
+            :key="estado"
+          >
+            {{ estado }}
+          </option>
+        </b-select>
+      </b-field>
       <b-table
         :data="conejos"
         :loading="cargando"
@@ -119,13 +170,37 @@ import {
   query,
   updateDoc,
   addDoc,
+  where,
 } from "firebase/firestore";
 import BaseDeDatosService from "../../services/BaseDeDatosService";
 import FotosDeConejo from "./FotosDeConejo.vue";
 import { deleteObject, getStorage, ref } from "firebase/storage";
+const FallecimientoFallecido = "Fallecidos",
+  FallecimientoVivo = "Vivos",
+  FallecimientoTodos = "Todos",
+  VendidoVendido = "Vendidos",
+  VendidoNoVendido = "No vendidos",
+  VendidoTodos = "Todos",
+  GeneroTodos = "Todos",
+  GeneroHembra = "H",
+  GeneroMacho = "M";
 export default {
   components: { FotosDeConejo },
   data: () => ({
+    filtrosSeleccionados: {
+      fallecidos: FallecimientoVivo,
+      vendidos: VendidoNoVendido,
+      genero: GeneroTodos,
+    },
+    filtros: {
+      fallecidos: [
+        FallecimientoFallecido,
+        FallecimientoVivo,
+        FallecimientoTodos,
+      ],
+      vendidos: [VendidoVendido, VendidoNoVendido, VendidoTodos],
+      generos: [GeneroMacho, GeneroHembra, GeneroTodos],
+    },
     conejos: [],
     cargando: false,
     bd: null,
@@ -199,9 +274,33 @@ export default {
       });
     },
     async obtenerConejosYEscucharCambios() {
+      this.conejos = [];
+      console.log("Obtener...");
+      const consultas = [];
+      if (this.filtrosSeleccionados.fallecidos === FallecimientoVivo) {
+        consultas.push(where("fechaFallecimiento", "==", null));
+      } else if (
+        this.filtrosSeleccionados.fallecidos === FallecimientoFallecido
+      ) {
+        consultas.push(where("fechaFallecimiento", "!=", null));
+      }
+
+      if (this.filtrosSeleccionados.vendidos === VendidoVendido) {
+        consultas.push(where("vendido", "==", true));
+      } else if (this.filtrosSeleccionados.vendidos === VendidoNoVendido) {
+        consultas.push(where("vendido", "==", false));
+      }
+      if (this.filtrosSeleccionados.genero === GeneroHembra) {
+        consultas.push(where("genero", "==", "H"));
+      } else if (this.filtrosSeleccionados.genero === GeneroMacho) {
+        consultas.push(where("genero", "==", "M"));
+      }
+      console.log({ consultas });
+
       this.cargando = true;
       const consulta = query(
-        await BaseDeDatosService.obtenerColeccionConejos()
+        await BaseDeDatosService.obtenerColeccionConejos(),
+        ...consultas
       );
       onSnapshot(consulta, (instantanea) => {
         instantanea.docChanges().forEach((cambio) => {
