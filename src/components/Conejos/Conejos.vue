@@ -201,8 +201,6 @@
 import {
   deleteDoc,
   doc,
-  onSnapshot,
-  query,
   updateDoc,
   addDoc,
   where,
@@ -210,6 +208,7 @@ import {
 import BaseDeDatosService from "../../services/BaseDeDatosService";
 import FotosDeConejo from "./FotosDeConejo.vue";
 import { deleteObject, getStorage, ref } from "firebase/storage";
+import ConejosService from "../../services/ConejosService";
 const FallecimientoFallecido = "Fallecidos",
   FallecimientoVivo = "Vivos",
   FallecimientoTodos = "Todos",
@@ -349,34 +348,31 @@ export default {
         consultas.push(where("genero", "==", "M"));
       }
       this.cargando = true;
-      const consulta = query(
-        await BaseDeDatosService.obtenerColeccionConejos(),
-        ...consultas
+      const instantanea = await ConejosService.obtenerConejosUsandoConsultas(
+        consultas
       );
-      onSnapshot(consulta, (instantanea) => {
-        instantanea.docChanges().forEach((cambio) => {
-          this.cargando = true;
-          const conejo = cambio.doc.data();
-          const idConejo = cambio.doc.id;
-          if (cambio.type === "added") {
-            conejo.id = idConejo;
-            this.conejos.push(conejo);
+      instantanea.docChanges().forEach((cambio) => {
+        this.cargando = true;
+        const conejo = cambio.doc.data();
+        const idConejo = cambio.doc.id;
+        if (cambio.type === "added") {
+          conejo.id = idConejo;
+          this.conejos.push(conejo);
+        }
+        if (cambio.type === "modified") {
+          const indice = this.indiceDeConejo(idConejo);
+          if (indice !== -1) {
+            this.$set(this.conejos, indice, conejo);
           }
-          if (cambio.type === "modified") {
-            const indice = this.indiceDeConejo(idConejo);
-            if (indice !== -1) {
-              this.$set(this.conejos, indice, conejo);
-            }
+        }
+        if (cambio.type === "removed") {
+          const indice = this.indiceDeConejo(idConejo);
+          if (indice !== -1) {
+            this.conejos.splice(indice, 1);
           }
-          if (cambio.type === "removed") {
-            const indice = this.indiceDeConejo(idConejo);
-            if (indice !== -1) {
-              this.conejos.splice(indice, 1);
-            }
-          }
-        });
-        this.cargando = false;
+        }
       });
+      this.cargando = false;
     },
     indiceDeConejo(idConejo) {
       return this.conejos.findIndex((conejo) => conejo.id === idConejo);

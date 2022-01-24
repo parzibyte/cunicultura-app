@@ -64,16 +64,10 @@
   </div>
 </template>
 <script>
-import {
-  doc,
-  getDoc,
-  onSnapshot,
-  query,
-  updateDoc,
-  where,
-} from "@firebase/firestore";
+import { doc, onSnapshot, query, updateDoc, where } from "@firebase/firestore";
 import BaseDeDatosService from "../../../services/BaseDeDatosService";
 import SeleccionadorFecha from "./SeleccionadorFecha.vue";
+import ConejosService from "../../../services/ConejosService";
 export default {
   components: { SeleccionadorFecha },
   data: () => ({
@@ -111,17 +105,14 @@ export default {
     },
     async obtenerConeja() {
       this.cargando = true;
-      const instantaneaDocumento = await getDoc(
-        doc(
-          await BaseDeDatosService.obtener(),
-          "conejos",
+      try {
+        this.coneja = await ConejosService.obtenerConejoPorId(
           this.$route.params.id
-        )
-      );
-      if (instantaneaDocumento.exists()) {
-        this.coneja = instantaneaDocumento.data();
-      } else {
+        );
+      } catch (e) {
         this.$buefy.toast.open("Error obteniendo coneja por id");
+      } finally {
+        this.cargando = false;
       }
       this.cargando = false;
     },
@@ -135,36 +126,29 @@ export default {
     },
     async obtenerConejosYEscucharCambios() {
       this.cargando = true;
-      const consulta = query(
-        await BaseDeDatosService.obtenerColeccionConejos(),
-        where("genero", "==", "M"),
-        where("fechaFallecimiento", "==", null),
-        where("vendido", "==", false)
-      );
-      onSnapshot(consulta, (instantanea) => {
-        instantanea.docChanges().forEach((cambio) => {
-          this.cargando = true;
-          const conejo = cambio.doc.data();
-          const idConejo = cambio.doc.id;
-          if (cambio.type === "added") {
-            conejo.id = idConejo;
-            this.conejos.push(conejo);
+      const instantanea = await ConejosService.obtenerConejosConGenero("M");
+      instantanea.docChanges().forEach((cambio) => {
+        this.cargando = true;
+        const conejo = cambio.doc.data();
+        const idConejo = cambio.doc.id;
+        if (cambio.type === "added") {
+          conejo.id = idConejo;
+          this.conejos.push(conejo);
+        }
+        if (cambio.type === "modified") {
+          const indice = this.indiceDeConejo(idConejo);
+          if (indice !== -1) {
+            this.$set(this.conejos, indice, conejo);
           }
-          if (cambio.type === "modified") {
-            const indice = this.indiceDeConejo(idConejo);
-            if (indice !== -1) {
-              this.$set(this.conejos, indice, conejo);
-            }
+        }
+        if (cambio.type === "removed") {
+          const indice = this.indiceDeConejo(idConejo);
+          if (indice !== -1) {
+            this.conejos.splice(indice, 1);
           }
-          if (cambio.type === "removed") {
-            const indice = this.indiceDeConejo(idConejo);
-            if (indice !== -1) {
-              this.conejos.splice(indice, 1);
-            }
-          }
-        });
-        this.cargando = false;
+        }
       });
+      this.cargando = false;
     },
     indiceDeConejo(idConejo) {
       return this.conejos.findIndex((conejo) => conejo.id === idConejo);

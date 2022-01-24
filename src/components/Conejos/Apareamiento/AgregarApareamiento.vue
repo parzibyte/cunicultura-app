@@ -11,15 +11,10 @@
           <strong>Coneja: </strong> {{ coneja.identificador }}
         </b-notification>
         <b-field label="Padre">
-          <b-select
-            :loading="cargando"
-            placeholder="Seleccione un conejo"
-            v-model="apareamiento.padre"
-          >
-            <option v-for="conejo in conejos" :value="conejo" :key="conejo.id">
-              {{ conejo.identificador }}
-            </option>
-          </b-select>
+          <select-conejos
+            genero="M"
+            :conejoSeleccionado.sync="apareamiento.padre"
+          />
         </b-field>
         <b-field label="Fecha de inicio">
           <b-datepicker
@@ -42,47 +37,37 @@
   </div>
 </template>
 <script>
-import {
-  addDoc,
-  doc,
-  getDoc,
-  onSnapshot,
-  query,
-  where,
-} from "firebase/firestore";
+import { addDoc } from "firebase/firestore";
 import BaseDeDatosService from "../../../services/BaseDeDatosService";
+import SelectConejos from "../SelectConejos.vue";
+import ConejosService from "../../../services/ConejosService";
 export default {
+  components: { SelectConejos },
   data: () => ({
     coleccionConejos: null,
     apareamiento: {
       padre: null,
       fechaInicio: new Date(),
     },
-    conejos: [],
     cargando: false,
     coneja: {},
   }),
   async mounted() {
     await this.obtenerConeja();
     this.coleccionConejos = await BaseDeDatosService.obtenerColeccionConejos();
-    await this.obtenerConejosYEscucharCambios();
   },
   methods: {
     async obtenerConeja() {
       this.cargando = true;
-      const instantaneaDocumento = await getDoc(
-        doc(
-          await BaseDeDatosService.obtener(),
-          "conejos",
+      try {
+        this.coneja = await ConejosService.obtenerConejoPorId(
           this.$route.params.id
-        )
-      );
-      if (instantaneaDocumento.exists()) {
-        this.coneja = instantaneaDocumento.data();
-      } else {
+        );
+      } catch (e) {
         this.$buefy.toast.open("Error obteniendo coneja por id");
+      } finally {
+        this.cargando = false;
       }
-      this.cargando = false;
     },
     async guardar() {
       if (!this.apareamiento.padre || !this.apareamiento.fechaInicio) {
@@ -98,41 +83,6 @@ export default {
         apareamiento
       );
       this.$buefy.toast.open("Guardado");
-    },
-    indiceDeConejo(idConejo) {
-      return this.conejos.findIndex((conejo) => conejo.id === idConejo);
-    },
-    async obtenerConejosYEscucharCambios() {
-      const consulta = query(
-        this.coleccionConejos,
-        where("genero", "==", "M"),
-        where("fechaFallecimiento", "==", null),
-        where("vendido", "==", false)
-      );
-      onSnapshot(consulta, (instantanea) => {
-        this.cargando = true;
-        instantanea.docChanges().forEach((cambio) => {
-          const conejo = cambio.doc.data();
-          const idConejo = cambio.doc.id;
-          if (cambio.type === "added") {
-            conejo.id = idConejo;
-            this.conejos.push(conejo);
-          }
-          if (cambio.type === "modified") {
-            const indice = this.indiceDeConejo(idConejo);
-            if (indice !== -1) {
-              this.$set(this.conejos, indice, conejo);
-            }
-          }
-          if (cambio.type === "removed") {
-            const indice = this.indiceDeConejo(idConejo);
-            if (indice !== -1) {
-              this.conejos.splice(indice, 1);
-            }
-          }
-        });
-        this.cargando = false;
-      });
     },
     volver() {
       this.$router.go(-1);
