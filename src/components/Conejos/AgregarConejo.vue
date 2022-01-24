@@ -5,7 +5,7 @@
         <select-conejos genero="M" :conejoSeleccionado.sync="conejo.padre" />
       </b-field>
       <b-field label="Madre">
-        <select-conejos genero="H" :conejoSeleccionado.sync="conejo.padre" />
+        <select-conejos genero="H" :conejoSeleccionado.sync="conejo.madre" />
       </b-field>
       <b-field label="Identificador">
         <b-input
