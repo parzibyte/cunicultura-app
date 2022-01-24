@@ -1,7 +1,14 @@
-import { doc, getDoc, onSnapshot, query, where } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, query, updateDoc, where } from "firebase/firestore";
+import { getStorage, ref } from "firebase/storage";
 import BaseDeDatosService from "./BaseDeDatosService";
 
 const ConejosService = {
+    async actualizarConejo(idConejo, conejo) {
+        await updateDoc(doc(await BaseDeDatosService.obtener(), "conejos", idConejo), conejo);
+    },
+    async obtenerReferenciaParaFoto(identificadorConejo, nombreFoto) {
+        return ref(getStorage(), "conejos/" + identificadorConejo + "/" + nombreFoto);
+    },
     async obtenerConejoPorId(id) {
         const instantaneaDocumento = await getDoc(
             doc(

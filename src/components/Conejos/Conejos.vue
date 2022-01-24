@@ -112,16 +112,16 @@
           <b-table-column field="padre" label="Padres" v-slot="props">
             <b-tag
               size="is-medium"
-              v-show="props.row.madre"
+              v-show="props.row.madre.identificador"
               class="color-coneja"
-              >{{ props.row.madre }}</b-tag
+              >{{ props.row.madre.identificador }}</b-tag
             >
             &nbsp;
             <b-tag
-              v-show="props.row.padre"
+              v-show="props.row.padre.identificador"
               size="is-medium"
               class="color-conejo"
-              >{{ props.row.padre }}</b-tag
+              >{{ props.row.padre.identificador }}</b-tag
             >
           </b-table-column>
           <b-table-column field="fotos" v-slot="props">
@@ -147,7 +147,7 @@
             <b-button
               v-show="!props.row.fechaFallecimiento && !props.row.vendido"
               type="is-info"
-              @click="eliminar(props.row)"
+              @click="editar(props.row)"
             >
               <b-icon icon="pencil"></b-icon
             ></b-button>
@@ -201,7 +201,7 @@
 import { deleteDoc, doc, updateDoc, addDoc, where } from "firebase/firestore";
 import BaseDeDatosService from "../../services/BaseDeDatosService";
 import FotosDeConejo from "./FotosDeConejo.vue";
-import { deleteObject, getStorage, ref } from "firebase/storage";
+import { deleteObject,  } from "firebase/storage";
 import ConejosService from "../../services/ConejosService";
 const FallecimientoFallecido = "Fallecidos",
   FallecimientoVivo = "Vivos",
@@ -239,6 +239,12 @@ export default {
     await this.obtenerConejosYEscucharCambios();
   },
   methods: {
+    editar(conejo) {
+      this.$router.push({
+        name: "EditarConejo",
+        params: { id: conejo.id },
+      });
+    },
     totalMachos() {
       let total = 0;
       for (const conejo of this.conejos) {
@@ -305,17 +311,18 @@ export default {
         confirmText: "Sí, eliminar",
         onConfirm: async () => {
           this.cargando = true;
-          const storage = getStorage();
           for (const foto of conejo.fotos) {
             await deleteObject(
-              ref(storage, `conejos/${conejo.identificador}/${foto}`)
+              await ConejosService.obtenerReferenciaParaFoto(
+                conejo.identificador,
+                foto
+              )
             );
           }
           await deleteDoc(
             doc(await BaseDeDatosService.obtener(), "conejos", conejo.id)
           );
           this.cargando = false;
-
           this.$buefy.toast.open("Eliminado");
         },
       });
