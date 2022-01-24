@@ -18,24 +18,20 @@ const ConejosService = {
             }
         });
     },
-    async obtenerConejosConGenero(genero) {
+    async obtenerConejosConGenero(genero, callback) {
         return ConejosService.obtenerConejosUsandoConsultas(
             [where("genero", "==", genero),
             where("fechaFallecimiento", "==", null),
-            where("vendido", "==", false)]
+            where("vendido", "==", false)], callback
         );
     },
-    async obtenerConejosUsandoConsultas(consultas) {
+    async obtenerConejosUsandoConsultas(consultas, callback) {
         const coleccion = await BaseDeDatosService.obtenerColeccionConejos();
-        return new Promise((resolve) => {
-            const consulta = query(
-                coleccion,
-                ...consultas
-            );
-            onSnapshot(consulta, (instantanea) => {
-                resolve(instantanea);
-            });
-        });
+        const consulta = query(
+            coleccion,
+            ...consultas
+        );
+        onSnapshot(consulta, callback);
     },
 };
 export default ConejosService;

@@ -64,31 +64,33 @@ export default {
     },
     async obtenerConejosYEscucharCambios() {
       this.cargando = true;
-      const instantanea = await ConejosService.obtenerConejosUsandoConsultas([
-        where("fechaFallecimiento", "==", null),
-      ]);
-      instantanea.docChanges().forEach((cambio) => {
-        this.cargando = true;
-        const conejo = cambio.doc.data();
-        const idConejo = cambio.doc.id;
-        if (cambio.type === "added") {
-          conejo.id = idConejo;
-          this.conejos.push(conejo);
+      ConejosService.obtenerConejosUsandoConsultas(
+        [where("fechaFallecimiento", "==", null)],
+        (instantanea) => {
+          instantanea.docChanges().forEach((cambio) => {
+            this.cargando = true;
+            const conejo = cambio.doc.data();
+            const idConejo = cambio.doc.id;
+            if (cambio.type === "added") {
+              conejo.id = idConejo;
+              this.conejos.push(conejo);
+            }
+            if (cambio.type === "modified") {
+              const indice = this.indiceDeConejo(idConejo);
+              if (indice !== -1) {
+                this.$set(this.conejos, indice, conejo);
+              }
+            }
+            if (cambio.type === "removed") {
+              const indice = this.indiceDeConejo(idConejo);
+              if (indice !== -1) {
+                this.conejos.splice(indice, 1);
+              }
+            }
+          });
+          this.cargando = false;
         }
-        if (cambio.type === "modified") {
-          const indice = this.indiceDeConejo(idConejo);
-          if (indice !== -1) {
-            this.$set(this.conejos, indice, conejo);
-          }
-        }
-        if (cambio.type === "removed") {
-          const indice = this.indiceDeConejo(idConejo);
-          if (indice !== -1) {
-            this.conejos.splice(indice, 1);
-          }
-        }
-      });
-      this.cargando = false;
+      );
     },
     indiceDeConejo(idConejo) {
       return this.conejos.findIndex((conejo) => conejo.id === idConejo);

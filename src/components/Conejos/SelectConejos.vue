@@ -36,30 +36,32 @@ export default {
     },
     async obtenerConejosYEscucharCambios() {
       this.cargando = true;
-      const instantanea = await ConejosService.obtenerConejosConGenero(
-        this.genero
+      ConejosService.obtenerConejosConGenero(
+        this.genero,
+        (instantanea) => {
+          instantanea.docChanges().forEach((cambio) => {
+            const conejo = cambio.doc.data();
+            const idConejo = cambio.doc.id;
+            if (cambio.type === "added") {
+              conejo.id = idConejo;
+              this.conejos.push(conejo);
+            }
+            if (cambio.type === "modified") {
+              const indice = this.indiceDeConejo(idConejo);
+              if (indice !== -1) {
+                this.$set(this.conejos, indice, conejo);
+              }
+            }
+            if (cambio.type === "removed") {
+              const indice = this.indiceDeConejo(idConejo);
+              if (indice !== -1) {
+                this.conejos.splice(indice, 1);
+              }
+            }
+          });
+          this.cargando = false;
+        }
       );
-      instantanea.docChanges().forEach((cambio) => {
-        const conejo = cambio.doc.data();
-        const idConejo = cambio.doc.id;
-        if (cambio.type === "added") {
-          conejo.id = idConejo;
-          this.conejos.push(conejo);
-        }
-        if (cambio.type === "modified") {
-          const indice = this.indiceDeConejo(idConejo);
-          if (indice !== -1) {
-            this.$set(this.conejos, indice, conejo);
-          }
-        }
-        if (cambio.type === "removed") {
-          const indice = this.indiceDeConejo(idConejo);
-          if (indice !== -1) {
-            this.conejos.splice(indice, 1);
-          }
-        }
-      });
-      this.cargando = false;
     },
   },
 };
