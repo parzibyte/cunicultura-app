@@ -12,7 +12,9 @@ const ConejosService = {
         );
         return new Promise((resolve, reject) => {
             if (instantaneaDocumento.exists()) {
-                resolve(instantaneaDocumento.data());
+                const conejo = instantaneaDocumento.data();
+                conejo.id = instantaneaDocumento.id;
+                resolve(conejo);
             } else {
                 reject("No existe conejo con ese ID");
             }
