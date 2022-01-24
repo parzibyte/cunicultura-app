@@ -1,70 +1,70 @@
 <template>
-  <div class="columns">
-    <div class="column">
-      <b-field label="Padre">
-        <select-conejos genero="M" :conejoSeleccionado.sync="conejo.padre" />
-      </b-field>
-      <b-field label="Madre">
-        <select-conejos genero="H" :conejoSeleccionado.sync="conejo.madre" />
-      </b-field>
-      <b-field label="Identificador">
-        <b-input
-          v-model="conejo.identificador"
-          placeholder="Identificador"
-        ></b-input>
-      </b-field>
-      <b-field label="Género">
-        <b-radio v-model="conejo.genero" name="name" native-value="M">
-          Macho
-        </b-radio>
-        <b-radio v-model="conejo.genero" name="name" native-value="H">
-          Hembra
-        </b-radio>
-      </b-field>
-      <b-field label="Fecha de nacimiento">
-        <b-datepicker
-          v-model="conejo.fechaNacimiento"
-          locale="es-MX"
-          placeholder="Clic para seleccionar..."
-          icon="calendar-today"
-          trap-focus
-          :icon-right="conejo.fechaNacimiento ? 'close-circle' : ''"
-          icon-right-clickable
-          @icon-right-click="conejo.fechaNacimiento = null"
+    <div class="columns">
+      <div class="column">
+        <b-field label="Padre">
+          <select-conejos genero="M" :conejoSeleccionado.sync="conejo.padre" />
+        </b-field>
+        <b-field label="Madre">
+          <select-conejos genero="H" :conejoSeleccionado.sync="conejo.madre" />
+        </b-field>
+        <b-field label="Identificador">
+          <b-input
+            v-model="conejo.identificador"
+            placeholder="Identificador"
+          ></b-input>
+        </b-field>
+        <b-field label="Género">
+          <b-radio v-model="conejo.genero" name="name" native-value="M">
+            Macho
+          </b-radio>
+          <b-radio v-model="conejo.genero" name="name" native-value="H">
+            Hembra
+          </b-radio>
+        </b-field>
+        <b-field label="Fecha de nacimiento">
+          <b-datepicker
+            v-model="conejo.fechaNacimiento"
+            locale="es-MX"
+            placeholder="Clic para seleccionar..."
+            icon="calendar-today"
+            trap-focus
+            :icon-right="conejo.fechaNacimiento ? 'close-circle' : ''"
+            icon-right-clickable
+            @icon-right-click="conejo.fechaNacimiento = null"
+          >
+          </b-datepicker>
+        </b-field>
+        <b-field>
+          <b-upload v-model="conejo.fotos" multiple drag-drop expanded>
+            <section class="section">
+              <div class="content has-text-centered">
+                <p>
+                  <b-icon icon="upload" size="is-large"></b-icon>
+                </p>
+                <p>Clic aquí para buscar las fotos</p>
+              </div>
+            </section>
+          </b-upload>
+        </b-field>
+        <div class="tags">
+          <span
+            v-for="(archivo, indice) in conejo.fotos"
+            :key="indice"
+            class="tag is-primary"
+          >
+            {{ archivo.name }}
+            <button
+              class="delete is-small"
+              type="button"
+              @click="eliminarFoto(indice)"
+            ></button>
+          </span>
+        </div>
+        <b-button :loading="cargando" @click="guardar()" type="is-success"
+          >Guardar</b-button
         >
-        </b-datepicker>
-      </b-field>
-      <b-field>
-        <b-upload v-model="conejo.fotos" multiple drag-drop expanded>
-          <section class="section">
-            <div class="content has-text-centered">
-              <p>
-                <b-icon icon="upload" size="is-large"></b-icon>
-              </p>
-              <p>Clic aquí para buscar las fotos</p>
-            </div>
-          </section>
-        </b-upload>
-      </b-field>
-      <div class="tags">
-        <span
-          v-for="(archivo, indice) in conejo.fotos"
-          :key="indice"
-          class="tag is-primary"
-        >
-          {{ archivo.name }}
-          <button
-            class="delete is-small"
-            type="button"
-            @click="eliminarFoto(indice)"
-          ></button>
-        </span>
       </div>
-      <b-button :loading="cargando" @click="guardar()" type="is-success"
-        >Guardar</b-button
-      >
     </div>
-  </div>
 </template>
 <script>
 import { addDoc } from "firebase/firestore";
@@ -110,11 +110,25 @@ export default {
         conejo.fechaNacimiento.setHours(0, 0, 0, 0);
         conejo.fechaNacimiento = conejo.fechaNacimiento.getTime();
       }
+      /**
+       * Además del id necesitamos el identificador (nombre) del conejo padre y madre, ya
+       * que éstos pueden ser vendidos o eliminados en otro momento y nos quedaríamos sin el registro
+       */
       if (conejo.padre) {
-        conejo.padre = conejo.padre.identificador;
+        conejo.padre = {
+          id: conejo.padre.id,
+          identificador: conejo.padre.identificador,
+        };
+      } else {
+        conejo.padre = {};
       }
       if (conejo.madre) {
-        conejo.madre = conejo.madre.identificador;
+        conejo.madre = {
+          id: conejo.madre.id,
+          identificador: conejo.madre.identificador,
+        };
+      } else {
+        conejo.madre = {};
       }
       if (fotos.length > 0) {
         for (const foto of fotos) {
