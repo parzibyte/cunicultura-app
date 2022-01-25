@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, enableIndexedDbPersistence, collection } from "firebase/firestore";
 import { getStorage,} from "firebase/storage";
 import { ToastProgrammatic as Toast } from 'buefy'
-let modoSinConexionActivado = false;
+let modoSinConexionActivado = true; // Deshabilitado porque marca muchos errores al inicio
 const BaseDeDatosService = {
     obtener: async () => {
         const firebaseConfig = {
