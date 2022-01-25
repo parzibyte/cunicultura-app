@@ -3,7 +3,7 @@
     "short_name": "Cunicultura app",
     "theme_color": "#6D4C41",
     "background_color": "#6D4C41",
-    "display": "fullscreen",
+    "display": "standalone",
     "orientation": "portrait",
     "scope": "./",
     "start_url": "./",
