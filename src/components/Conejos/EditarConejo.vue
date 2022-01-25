@@ -68,19 +68,21 @@
           </span>
         </div>
         <p>Existentes:</p>
-        <div class="tags">
-          <span
+        <div class="columns is-multiline">
+          <div
+            class="column is-one-quarter has-text-centered"
             v-for="(archivo, indice) in conejo.fotos"
             :key="indice"
-            class="tag is-warning"
           >
-            {{ archivo }}
-            <button
-              class="delete is-small"
-              type="button"
+            <foto-de-conejo :conejo="conejo" :foto="archivo" />
+            <b-button
+              :loading="cargando"
+              type="is-danger"
               @click="eliminarFoto(archivo, indice)"
-            ></button>
-          </span>
+            >
+              <b-icon icon="delete"></b-icon>
+            </b-button>
+          </div>
         </div>
         <b-button :loading="cargando" @click="guardar()" type="is-success"
           >Guardar</b-button
@@ -99,8 +101,9 @@ import UtilesService from "../../services/UtilesService";
 import { deleteObject, uploadBytes } from "firebase/storage";
 import SelectConejos from "./SelectConejos.vue";
 import ConejosService from "../../services/ConejosService";
+import FotoDeConejo from "./FotoDeConejo.vue";
 export default {
-  components: { SelectConejos },
+  components: { SelectConejos, FotoDeConejo },
   async mounted() {
     this.cargando = true;
     const conejo = await ConejosService.obtenerConejoPorId(
