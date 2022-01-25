@@ -3,7 +3,7 @@
     <div class="hero-body">
       <div class="container">
         <h1 class="title">Acerca de</h1>
-        <img class="image" src="https://picsum.photos/200" />
+        <img title="El conejo pinto" class="image" :src="Pinto" />
         <h2 class="subtitle">App para cunicultura</h2>
 
         Creado y mantenido con
@@ -33,7 +33,22 @@
           target="_blank"
           >más proyectos aquí</a
         >
+        <hr />
+        <h4 class="is-size-4">Créditos de iconos</h4>
+        <a
+          href="https://www.flaticon.com/free-icons/rabbit"
+          title="rabbit icons"
+          >Rabbit icons created by torskaya - Flaticon</a
+        >
       </div>
     </div>
   </section>
 </template>
+<script>
+import Pinto from "../assets/pinto.jpg";
+export default {
+  data: () => ({
+    Pinto,
+  }),
+};
+</script>

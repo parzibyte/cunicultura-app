@@ -1,0 +1,17 @@
+{
+    "name": "Cunicultura app by Parzibyte",
+    "short_name": "Cunicultura app",
+    "theme_color": "#6D4C41",
+    "background_color": "#6D4C41",
+    "display": "fullscreen",
+    "orientation": "portrait",
+    "scope": "./",
+    "start_url": "./",
+    "icons": [
+        {
+            "src": "./rabbit.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
+}
