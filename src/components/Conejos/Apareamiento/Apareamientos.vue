@@ -44,7 +44,11 @@
               }})</span
             >
           </b-table-column>
-
+          <b-table-column label="Información" v-slot="props">
+            <span v-show="!props.row.fechaFin">
+              {{ informacion(props.row) }}
+            </span>
+          </b-table-column>
           <b-table-column field="fechaFin" label="Fin" v-slot="props">
             {{ props.row.fechaFin | timestampAFecha }}
             <b-button
@@ -68,6 +72,7 @@ import { doc, onSnapshot, query, updateDoc, where } from "@firebase/firestore";
 import BaseDeDatosService from "../../../services/BaseDeDatosService";
 import SeleccionadorFecha from "./SeleccionadorFecha.vue";
 import ConejosService from "../../../services/ConejosService";
+import utiles from "../../../utiles";
 export default {
   components: { SeleccionadorFecha },
   data: () => ({
@@ -84,6 +89,7 @@ export default {
     await this.obtenerApareamientos();
   },
   methods: {
+    informacion: utiles.informacionDeGestacion,
     marcarFin(apareamiento) {
       this.apareamientoSeleccionado = apareamiento;
       this.mostrarModalFecha = true;

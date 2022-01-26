@@ -143,6 +143,14 @@
               }})</span
             >
           </b-table-column>
+          <b-table-column label="Información" v-slot="props">
+            <ul
+              v-for="(informacion, idInformacion) in informacion(props.row)"
+              :key="idInformacion"
+            >
+              <li>{{ informacion }}</li>
+            </ul>
+          </b-table-column>
           <b-table-column field="id" label="Opciones" v-slot="props">
             <b-button
               v-show="!props.row.fechaFallecimiento && !props.row.vendido"
@@ -201,8 +209,9 @@
 import { deleteDoc, doc, updateDoc, addDoc, where } from "firebase/firestore";
 import BaseDeDatosService from "../../services/BaseDeDatosService";
 import FotosDeConejo from "./FotosDeConejo.vue";
-import { deleteObject,  } from "firebase/storage";
+import { deleteObject } from "firebase/storage";
 import ConejosService from "../../services/ConejosService";
+import utiles from "../../utiles";
 const FallecimientoFallecido = "Fallecidos",
   FallecimientoVivo = "Vivos",
   FallecimientoTodos = "Todos",
@@ -239,6 +248,7 @@ export default {
     await this.obtenerConejosYEscucharCambios();
   },
   methods: {
+    informacion: utiles.informacionDeConejoSegunNacimiento,
     editar(conejo) {
       this.$router.push({
         name: "EditarConejo",
